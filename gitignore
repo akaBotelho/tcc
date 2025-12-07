@@ -1,0 +1,14 @@
+# Environment
+.env
+!.env.example
+
+# Python
+__pycache__/
+
+# Output
+output/
+*.pcap
+*.json
+
+# Firmware extraído
+_*.extracted/
