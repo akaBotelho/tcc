@@ -48,7 +48,7 @@ MIME_MAP = {
     "application/epub+zip": ".epub",
     "application/x-cab": ".cab",
     "application/x-cab-compressed": ".cab",
-    # BINÁRIOS
+    # Binaries
     "application/octet-stream": ".bin",
     "application/bin": ".bin",
     "application/binary": ".bin",
@@ -65,7 +65,7 @@ MIME_MAP = {
     # XML
     "text/xml": ".xml",
     "application/xml": ".xml",
-    # CGI / Código
+    # CGI / Code
     "application/cgi": ".cgi",
     "application/x-cgi": ".cgi",
     "text/x-c++": ".cpp",
@@ -78,7 +78,7 @@ MIME_MAP = {
     "application/x-httpd-php3-preprocessed": ".php3",
     "application/x-httpd-php4": ".php4",
     "application/x-php": ".php",
-    # Configurações
+    # Configurations
     "application/isf.sharing.config": ".conf",
     "application/vnd.centra.client.configuration": ".conf",
     # DEB
@@ -89,7 +89,7 @@ MIME_MAP = {
     "application/email": ".eml",
     "application/x-email": ".eml",
     "message/rfc822": ".eml",
-    # IMAGENS
+    # Images
     "image/bmp": ".bmp",
     "image/x-bmp": ".bmp",
     "image/x-win-bitmap": ".bmp",
@@ -109,7 +109,7 @@ MIME_MAP = {
     "text/javascript": ".js",
     "text/x-javascript": ".js",
     "text/x-js": ".js",
-    # VÍDEO / ÁUDIO
+    # Video / Audio
     "video/x-msvideo": ".avi",
     "video/mp4": ".mp4",
     "audio/wav": ".wav",
@@ -117,13 +117,13 @@ MIME_MAP = {
     "audio/x-wav": ".wav",
     "video/x-flv": ".flv",
     "application/x-flv": ".flv",
-    # MS OFFICE (antigos)
+    # MS Office (legacy)
     "application/msword": ".doc",
     "application/vnd.ms-word": ".doc",
     "application/vnd.ms-powerpoint": ".ppt",
     "application/vnd.ms-excel": ".xls",
     "application/msexcel": ".xls",
-    # MS OFFICE (novos)
+    # MS Office (modern)
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
     "application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
@@ -132,72 +132,72 @@ MIME_MAP = {
     "text/rtf": ".rtf",
     # WordPerfect
     "application/vnd.wordperfect": ".wpd",
-    # Executáveis
+    # Executables
     "application/exe": ".exe",
     "application/x-exe": ".exe",
     "application/x-msdownload": ".exe",
     "application/x-dosexec": ".exe",
 }
 
-# Categorias OWASP IoT Top 10
+# OWASP IoT Top 10 Categories
 OWASP_IOT_TOP10 = {
     "I1": {
-        "name": "Senhas Fracas/Hardcoded",
-        "description": "Uso de credenciais fracas, hardcoded ou publicamente disponíveis",
+        "name": "Weak/Hardcoded Passwords",
+        "description": "Use of weak, hardcoded, or publicly available credentials",
     },
     "I2": {
-        "name": "Serviços de Rede Inseguros",
-        "description": "Serviços de rede desnecessários ou inseguros expostos",
+        "name": "Insecure Network Services",
+        "description": "Unnecessary or insecure network services exposed",
     },
     "I3": {
-        "name": "Interfaces de Ecossistema Inseguras",
-        "description": "APIs, interfaces web ou móveis inseguras",
+        "name": "Insecure Ecosystem Interfaces",
+        "description": "Insecure web, mobile, or API interfaces",
     },
     "I4": {
-        "name": "Falta de Atualização Segura",
-        "description": "Falta de mecanismo de atualização seguro de firmware",
+        "name": "Lack of Secure Update Mechanism",
+        "description": "Lack of secure firmware update mechanism",
     },
     "I5": {
-        "name": "Componentes Inseguros/Desatualizados",
-        "description": "Uso de componentes de software desatualizados ou inseguros",
+        "name": "Insecure/Outdated Components",
+        "description": "Use of outdated or insecure software components",
     },
     "I6": {
-        "name": "Proteção de Privacidade Insuficiente",
-        "description": "Dados do usuário coletados/armazenados de forma insegura",
+        "name": "Insufficient Privacy Protection",
+        "description": "User data collected/stored insecurely",
     },
     "I7": {
-        "name": "Transferência/Armazenamento Inseguro",
-        "description": "Falta de criptografia em dados em trânsito ou armazenados",
+        "name": "Insecure Data Transfer and Storage",
+        "description": "Lack of encryption for data in transit or at rest",
     },
     "I8": {
-        "name": "Falta de Gerenciamento de Dispositivos",
-        "description": "Falta de suporte para gerenciamento seguro de dispositivos",
+        "name": "Lack of Device Management",
+        "description": "Lack of support for secure device management",
     },
     "I9": {
-        "name": "Configurações Padrão Inseguras",
-        "description": "Dispositivos com configurações padrão inseguras",
+        "name": "Insecure Default Settings",
+        "description": "Devices with insecure default settings",
     },
     "I10": {
-        "name": "Falta de Hardening Físico",
-        "description": "Falta de medidas de proteção física (fora do escopo)",
+        "name": "Lack of Physical Hardening",
+        "description": "Lack of physical protection measures (out of scope)",
     },
 }
 
-# Mapeamento de tipos de vulnerabilidade para OWASP IoT
+# Vulnerability type to OWASP IoT mapping
 VULN_TO_OWASP = {
-    # I1: Senhas Fracas/Hardcoded
+    # I1: Weak/Hardcoded Passwords
     "hardcoded_credentials": "I1",
     "default_credentials": "I1",
     "brute_force_success": "I1",
     "cracked_password": "I1",
-    # I2: Serviços de Rede Inseguros
+    # I2: Insecure Network Services
     "telnet_enabled": "I2",
     "ftp_enabled": "I2",
-    # I3: Interfaces de Ecossistema Inseguras
+    # I3: Insecure Ecosystem Interfaces
     "web_vulnerability": "I3",
-    # I5: Componentes Inseguros/Desatualizados
+    # I5: Insecure/Outdated Components
     "known_cve": "I5",
-    # I7: Transferência/Armazenamento Inseguro
+    # I7: Insecure Data Transfer and Storage
     "cleartext_credentials": "I7",
     "insecure_transfer": "I7",
     "exposed_certificate": "I7",
@@ -205,7 +205,7 @@ VULN_TO_OWASP = {
     "exposed_hash": "I7",
 }
 
-# Mapeamento de alertas ZAP para OWASP IoT
+# ZAP alert to OWASP IoT mapping
 ZAP_ALERT_TO_OWASP = {
     "Cross Site Scripting": "I3",
     "XSS": "I3",
@@ -240,7 +240,7 @@ def suppress_stderr():
 
 
 def load_env() -> Dict[str, str]:
-    """Carrega configurações do arquivo .env."""
+    """Loads settings from .env file."""
     load_dotenv()
     return {
         "ZAP_API_KEY": os.getenv("ZAP_API_KEY", ""),
@@ -267,7 +267,7 @@ def load_env() -> Dict[str, str]:
 
 
 def parse_passwd_file(content: str) -> List[Dict]:
-    """Parseia conteúdo de /etc/passwd e retorna lista de usuários."""
+    """Parses /etc/passwd content and returns user list."""
     users = []
     for line in content.strip().split("\n"):
         if not line or line.startswith("#"):
@@ -289,7 +289,7 @@ def parse_passwd_file(content: str) -> List[Dict]:
 
 
 def parse_shadow_file(content: str) -> List[Dict]:
-    """Parseia conteúdo de /etc/shadow e retorna lista de hashes."""
+    """Parses /etc/shadow content and returns hash list."""
     hashes = []
     for line in content.strip().split("\n"):
         if not line or line.startswith("#"):
@@ -309,7 +309,7 @@ def parse_shadow_file(content: str) -> List[Dict]:
 def search_patterns(
     path: str, patterns: List[str], extensions: Optional[List[str]] = None
 ) -> List[Dict]:
-    """Busca padrões em arquivos dentro de um diretório, agrupando por arquivo."""
+    """Searches for patterns in files within a directory, grouped by file."""
     files_with_matches = {}
     path_obj = Path(path)
 
@@ -354,11 +354,11 @@ def search_patterns(
 
 
 def load_default_credentials(csv_path: str) -> Dict[str, List[str]]:
-    """Carrega credenciais padrão do CSV agrupadas por fabricante."""
+    """Loads default credentials from CSV grouped by vendor."""
     credentials_by_vendor = {}
 
     if not os.path.exists(csv_path):
-        print(f"[-] Arquivo não encontrado: {csv_path}")
+        print(f"[-] File not found: {csv_path}")
         return {}
 
     try:
@@ -381,9 +381,9 @@ def load_default_credentials(csv_path: str) -> Dict[str, List[str]]:
                         credentials_by_vendor[vendor] = []
                     credentials_by_vendor[vendor].append(credential)
 
-        print("[+] Credenciais padrão carregadas")
+        print("[+] Default credentials loaded")
     except Exception as e:
-        print(f"[-] Erro ao carregar credenciais padrão: {e}")
+        print(f"[-] Error loading default credentials: {e}")
         return {}
 
     return credentials_by_vendor
@@ -392,7 +392,7 @@ def load_default_credentials(csv_path: str) -> Dict[str, List[str]]:
 def get_credentials_for_vendor(
     credentials_by_vendor: Dict[str, List[str]], vendor: str
 ) -> List[str]:
-    """Retorna credenciais para um fabricante específico."""
+    """Returns credentials for a specific vendor."""
     if not vendor:
         return []
 
@@ -409,10 +409,10 @@ def get_credentials_for_vendor(
 
 
 def save_results(output_dir: str, prefix: str, name: str, data: Any) -> str:
-    """Salva resultados em arquivo JSON."""
+    """Saves results to JSON file."""
     os.makedirs(output_dir, exist_ok=True)
     filepath = os.path.join(output_dir, f"{prefix}_{name}.json")
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-    print(f"[+] Salvo: {filepath}")
+    print(f"[+] Saved: {filepath}")
     return filepath

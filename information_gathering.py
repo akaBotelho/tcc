@@ -23,25 +23,25 @@ class InformationGathering:
         self.brute_force_services = []
 
     def network_discovery(self, ip_range: str = "192.168.0.1/24") -> List[Dict]:
-        """Descobre hosts ativos na rede."""
-        print(f"[*] Descobrindo hosts em {ip_range}")
+        """Discovers active hosts on the network."""
+        print(f"[*] Discovering hosts on {ip_range}")
         try:
             hosts = self.nd.scan(ip_range=ip_range, output=["ip", "mac", "vendor"])
-            print(f"[+] {len(hosts)} hosts encontrados")
+            print(f"[+] {len(hosts)} hosts found")
             return hosts
         except Exception as e:
-            print(f"[-] Erro na descoberta: {e}")
+            print(f"[-] Discovery error: {e}")
             return []
 
     def nmap_scan(self) -> Dict:
-        """Realiza varredura de rede completa."""
-        print(f"[*] Varredura nmap em {self.target}")
+        """Performs a full network scan."""
+        print(f"[*] Nmap scan on {self.target}")
         start_time = time.time()
 
         try:
             self.nm.scan(self.target, arguments="-sS -sV -O -v")
         except Exception as e:
-            print(f"[-] Erro no nmap: {e}")
+            print(f"[-] Nmap error: {e}")
             return {"duration": 0, "hosts": [], "vendor": self.vendor}
 
         scan_results = {
@@ -53,7 +53,7 @@ class InformationGathering:
         for host in self.nm.all_hosts():
             host_info = {"ip": host, "ports": [], "os": [], "vendor": self.vendor}
 
-            # Portas
+            # Ports
             for proto in self.nm[host].all_protocols():
                 for port in self.nm[host][proto].keys():
                     port_data = self.nm[host][proto][port]
@@ -69,7 +69,7 @@ class InformationGathering:
                         }
                         host_info["ports"].append(port_info)
 
-                        # Detecta serviços web (http/https)
+                        # Detects web services (http/https)
                         if "http" in service_name:
                             self.has_web_interface = True
                             protocol = (
@@ -88,7 +88,7 @@ class InformationGathering:
                                 }
                             )
 
-                        # Detecta serviços para força bruta
+                        # Detects brute force services
                         if service_name in BRUTE_FORCE_SERVICES:
                             self.brute_force_services.append(
                                 {
@@ -100,7 +100,7 @@ class InformationGathering:
                                 }
                             )
 
-            # Detecção de SO
+            # OS detection
             os_vendor = ""
             if "osmatch" in self.nm[host]:
                 for osmatch in self.nm[host]["osmatch"]:
@@ -115,13 +115,13 @@ class InformationGathering:
                             }
                             host_info["os"].append(os_info)
 
-            # Usa fabricante do OS se não tiver fabricante do network_discovery
+            # Use OS vendor if no vendor from network_discovery
             if not host_info["vendor"] and os_vendor:
                 host_info["vendor"] = os_vendor
 
             scan_results["hosts"].append(host_info)
 
-        # Atualiza self.vendor se detectado pelo OS
+        # Updates self.vendor if detected by OS
         if not self.vendor and scan_results["hosts"]:
             for host in scan_results["hosts"]:
                 if host.get("vendor"):
@@ -133,12 +133,12 @@ class InformationGathering:
         scan_results["web_services"] = self.web_services
         scan_results["brute_force_services"] = self.brute_force_services
 
-        print(f"[+] Varredura concluída em {scan_results['duration']:.1f}s")
+        print(f"[+] Scan completed in {scan_results['duration']:.1f}s")
         return scan_results
 
     def web_scan(self, output_dir: str = None) -> List[Dict]:
-        """Realiza varredura web com WhatWeb."""
-        print(f"[*] Varredura web em {self.target}")
+        """Performs web scan with WhatWeb."""
+        print(f"[*] Web scan on {self.target}")
 
         if not output_dir:
             output_dir = os.path.join(self.env["OUTPUT_DIR"], self.target)
@@ -167,9 +167,9 @@ class InformationGathering:
 
                 return [{"type": "WebScan", "details": json_data}]
             else:
-                print(f"[-] WhatWeb falhou: {result.stderr}")
+                print(f"[-] WhatWeb failed: {result.stderr}")
         except Exception as e:
-            print(f"[-] Erro no web_scan: {e}")
+            print(f"[-] Web scan error: {e}")
 
         return []
 
@@ -181,25 +181,25 @@ def main():
     hosts = gatherer.network_discovery(ip_range)
 
     if not hosts:
-        print("[-] Nenhum host encontrado")
+        print("[-] No hosts found")
         return
 
-    print("\n[*] Hosts disponíveis:")
+    print("\n[*] Available hosts:")
     for i, host in enumerate(hosts):
         print(f"  [{i}] {host['ip']} - {host.get('vendor', 'N/A')}")
 
     try:
-        idx = int(input("\n[?] Selecione o alvo (número): "))
+        idx = int(input("\n[?] Select target (number): "))
         target_host = hosts[idx]
         target_ip = target_host["ip"]
         target_vendor = target_host.get("vendor", "")
     except (ValueError, IndexError):
-        print("[-] Seleção inválida")
+        print("[-] Invalid selection")
         return
 
     output_dir = os.path.join(gatherer.env["OUTPUT_DIR"], target_ip)
-    print(f"\n[*] Alvo selecionado: {target_ip}")
-    print(f"[*] Resultados serão salvos em: {output_dir}/")
+    print(f"\n[*] Target selected: {target_ip}")
+    print(f"[*] Results will be saved to: {output_dir}/")
 
     gatherer.target = target_ip
     gatherer.vendor = target_vendor
@@ -210,7 +210,7 @@ def main():
     results_ww = gatherer.web_scan(output_dir=output_dir)
     save_results(output_dir, "02", "web_scan", results_ww)
 
-    print(f"\n[+] Coleta finalizada. Resultados em: {output_dir}/")
+    print(f"\n[+] Gathering complete. Results in: {output_dir}/")
 
 
 if __name__ == "__main__":

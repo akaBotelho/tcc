@@ -14,10 +14,10 @@ from utils import (
 
 
 class ReportGenerator:
-    """Gerador de relatórios de segurança IoT."""
+    """IoT security report generator."""
 
     def __init__(self, output_dir: str):
-        """Inicializa o gerador de relatórios."""
+        """Initializes the report generator."""
         self.output_dir = output_dir
         self.results: Dict[str, Any] = {}
         self.vulnerabilities: List[Dict] = []
@@ -30,7 +30,7 @@ class ReportGenerator:
         self.credentials_by_vendor = load_default_credentials(default_creds_csv)
 
     def add_scan_results(self, module: str, results: Dict) -> None:
-        """Adiciona resultados de um módulo de scan."""
+        """Adds results from a scan module."""
         self.results[module] = results
 
         if module == "information_gathering" and not self.vendor:
@@ -39,7 +39,7 @@ class ReportGenerator:
         self._extract_vulnerabilities(module, results)
 
     def _extract_vulnerabilities(self, module: str, results: Dict) -> None:
-        """Extrai vulnerabilidades dos resultados de cada módulo."""
+        """Extracts vulnerabilities from each module's results."""
         if module == "information_gathering":
             self._extract_from_nmap(results)
         elif module == "traffic_analyzer":
@@ -48,7 +48,7 @@ class ReportGenerator:
             self._extract_from_vuln_detection(results)
 
     def _extract_from_nmap(self, results: Dict) -> None:
-        """Extrai vulnerabilidades do scan nmap."""
+        """Extracts vulnerabilities from nmap scan."""
         for host in results.get("hosts", []):
             for port_info in host.get("ports", []):
                 service = port_info.get("service", "").lower()
@@ -62,12 +62,12 @@ class ReportGenerator:
                             "host": host.get("ip"),
                             "port": port_info.get("port"),
                             "service": service,
-                            "description": f"Serviço {service.upper()} habilitado (texto claro)",
+                            "description": f"{service.upper()} service enabled (cleartext)",
                         }
                     )
 
     def _extract_from_traffic(self, results: Dict) -> None:
-        """Extrai vulnerabilidades da análise de tráfego."""
+        """Extracts vulnerabilities from traffic analysis."""
         for finding in results.get("security_findings", []):
             self.vulnerabilities.append(
                 {
@@ -80,7 +80,7 @@ class ReportGenerator:
             )
 
     def _extract_from_vuln_detection(self, results: Dict) -> None:
-        """Extrai vulnerabilidades do módulo de detecção."""
+        """Extracts vulnerabilities from the detection module."""
         # ZAP scan
         for alert in results.get("web_scan", {}).get("vulnerabilities", []):
             self.vulnerabilities.append(
@@ -101,7 +101,7 @@ class ReportGenerator:
         # Firmware analysis
         fw = results.get("firmware_analysis", {})
         if fw:
-            # Hashes encontrados
+            # Hashes found
             for h in fw.get("hashes", []):
                 self.vulnerabilities.append(
                     {
@@ -109,11 +109,11 @@ class ReportGenerator:
                         "source": "firmware",
                         "severity": "high",
                         "username": h.get("username"),
-                        "description": f"Hash de senha encontrado para usuário {h.get('username')}",
+                        "description": f"Password hash found for user {h.get('username')}",
                     }
                 )
 
-            # Senhas quebradas
+            # Cracked passwords
             for crack in fw.get("cracked_passwords", []):
                 self.vulnerabilities.append(
                     {
@@ -121,11 +121,11 @@ class ReportGenerator:
                         "source": "firmware",
                         "severity": "critical",
                         "username": crack.get("username"),
-                        "description": f"Senha quebrada para usuário {crack.get('username')}",
+                        "description": f"Password cracked for user {crack.get('username')}",
                     }
                 )
 
-            # Credenciais hardcoded
+            # Hardcoded credentials
             for cred in fw.get("hardcoded_credentials", []):
                 matches = cred.get("matches", [])
                 self.vulnerabilities.append(
@@ -136,11 +136,11 @@ class ReportGenerator:
                         "file": cred.get("file"),
                         "match_count": len(matches),
                         "matches": matches,
-                        "description": f"Possíveis credenciais hardcoded ({len(matches)} ocorrências)",
+                        "description": f"Possible hardcoded credentials ({len(matches)} occurrences)",
                     }
                 )
 
-            # Certificados/chaves expostos
+            # Exposed certificates/keys
             for cert in fw.get("certificates", []):
                 cert_type = cert.get("type", "")
                 if cert_type == ".key":
@@ -150,7 +150,7 @@ class ReportGenerator:
                             "source": "firmware",
                             "severity": "critical",
                             "file": cert.get("file"),
-                            "description": "Chave privada exposta no firmware",
+                            "description": "Private key exposed in firmware",
                         }
                     )
                 else:
@@ -160,11 +160,11 @@ class ReportGenerator:
                             "source": "firmware",
                             "severity": "medium",
                             "file": cert.get("file"),
-                            "description": f"Certificado ({cert_type}) exposto no firmware",
+                            "description": f"Certificate ({cert_type}) exposed in firmware",
                         }
                     )
 
-        # Força bruta
+        # Brute force
         for bf in results.get("brute_force", []):
             username = bf.get("username", "")
             password = bf.get("password", "")
@@ -178,9 +178,9 @@ class ReportGenerator:
 
             vuln_type = "default_credentials" if is_default else "brute_force_success"
             description = (
-                f"Credencial padrão em uso: {username} ({self.vendor or 'generic'})"
+                f"Default credential in use: {username} ({self.vendor or 'generic'})"
                 if is_default
-                else f"Credencial fraca encontrada via força bruta: {username}"
+                else f"Weak credential found via brute force: {username}"
             )
 
             self.vulnerabilities.append(
@@ -212,7 +212,7 @@ class ReportGenerator:
                 )
 
     def _map_zap_risk(self, risk: str) -> str:
-        """Mapeia risco do ZAP para severidade."""
+        """Maps ZAP risk to severity."""
         mapping = {
             "High": "high",
             "Medium": "medium",
@@ -222,7 +222,7 @@ class ReportGenerator:
         return mapping.get(risk, "info")
 
     def _map_cvss_severity(self, score: float) -> str:
-        """Mapeia score CVSS para severidade."""
+        """Maps CVSS score to severity."""
         if not score:
             return "unknown"
         if score >= 9.0:
@@ -234,18 +234,18 @@ class ReportGenerator:
         return "low"
 
     def categorize_owasp_iot(self) -> Dict:
-        """Categoriza vulnerabilidades pelo OWASP IoT Top 10."""
+        """Categorizes vulnerabilities by OWASP IoT Top 10."""
         categories = {cat: [] for cat in OWASP_IOT_TOP10.keys()}
 
         for vuln in self.vulnerabilities:
             vuln_type = vuln.get("type", "")
             owasp_cat = None
 
-            # Tenta mapear pelo tipo
+            # Try to map by type
             if vuln_type in VULN_TO_OWASP:
                 owasp_cat = VULN_TO_OWASP[vuln_type]
 
-            # Se for vuln web, tenta mapear pelo nome do alerta ZAP
+            # If web vuln, try to map by ZAP alert name
             elif vuln_type == "web_vulnerability":
                 name = vuln.get("name", "")
                 for key, cat in ZAP_ALERT_TO_OWASP.items():
@@ -253,9 +253,9 @@ class ReportGenerator:
                         owasp_cat = cat
                         break
                 if not owasp_cat:
-                    owasp_cat = "I3"  # Default para vulns web
+                    owasp_cat = "I3"  # Default for web vulns
 
-            # Se tiver owasp_iot no próprio finding
+            # If finding has owasp_iot
             elif "owasp_iot" in vuln.get("details", {}):
                 owasp_cat = vuln["details"]["owasp_iot"]
 
@@ -266,7 +266,7 @@ class ReportGenerator:
         return categories
 
     def calculate_severity(self) -> Dict:
-        """Calcula distribuição de severidade das vulnerabilidades."""
+        """Calculates vulnerability severity distribution."""
         severity_count = {
             "critical": 0,
             "high": 0,
@@ -290,13 +290,13 @@ class ReportGenerator:
             + severity_count["low"] * 1
         )
 
-        risk_level = "baixo"
+        risk_level = "low"
         if total_score >= 50:
-            risk_level = "crítico"
+            risk_level = "critical"
         elif total_score >= 30:
-            risk_level = "alto"
+            risk_level = "high"
         elif total_score >= 15:
-            risk_level = "médio"
+            risk_level = "medium"
 
         return {
             "counts": severity_count,
@@ -306,57 +306,57 @@ class ReportGenerator:
         }
 
     def _get_recommendations(self, owasp_cat: str) -> List[str]:
-        """Retorna recomendações de mitigação por categoria OWASP."""
+        """Returns mitigation recommendations by OWASP category."""
         recommendations = {
             "I1": [
-                "Implementar política de senhas fortes",
-                "Remover todas as credenciais hardcoded do código/firmware",
-                "Forçar troca de senha padrão no primeiro acesso",
-                "Implementar bloqueio após tentativas de login falhas",
+                "Implement strong password policy",
+                "Remove all hardcoded credentials from code/firmware",
+                "Force default password change on first access",
+                "Implement lockout after failed login attempts",
             ],
             "I2": [
-                "Desabilitar serviços não utilizados",
-                "Usar protocolos seguros",
-                "Implementar firewall para restringir acesso às portas",
+                "Disable unused services",
+                "Use secure protocols",
+                "Implement firewall to restrict port access",
             ],
             "I3": [
-                "Implementar validação de entrada em todas as interfaces",
-                "Configurar headers de segurança",
+                "Implement input validation on all interfaces",
+                "Configure security headers",
             ],
             "I4": [
-                "Implementar verificação de assinatura digital em updates",
-                "Usar canal seguro (HTTPS) para download de atualizações",
-                "Notificação ao usuário sobre updates disponíveis",
-                "Proteção contra downgrade de versão",
+                "Implement digital signature verification for updates",
+                "Use secure channel (HTTPS) for update downloads",
+                "Notify user about available updates",
+                "Protection against version downgrade",
             ],
             "I5": [
-                "Manter inventário de componentes de software",
-                "Monitorar CVEs para componentes utilizados",
-                "Implementar processo de atualização regular",
-                "Substituir componentes sem suporte",
+                "Maintain software component inventory",
+                "Monitor CVEs for used components",
+                "Implement regular update process",
+                "Replace unsupported components",
             ],
             "I6": [
-                "Implementar criptografia para dados sensíveis",
-                "Minimizar coleta de dados pessoais",
-                "Implementar controle de acesso aos dados",
+                "Implement encryption for sensitive data",
+                "Minimize personal data collection",
+                "Implement data access control",
             ],
             "I7": [
-                "Usar criptografia para as comunicações",
-                "Criptografar dados sensíveis antes de armazenar",
-                "Não transmitir credenciais em texto claro",
+                "Use encryption for communications",
+                "Encrypt sensitive data before storage",
+                "Do not transmit credentials in cleartext",
             ],
             "I9": [
-                "Forçar troca de senha padrão no primeiro acesso",
-                "Alterar todas as configurações padrão",
-                "Desabilitar serviços desnecessários",
-                "Documentar configurações seguras recomendadas",
+                "Force default password change on first access",
+                "Change all default settings",
+                "Disable unnecessary services",
+                "Document recommended secure configurations",
             ],
         }
         return recommendations.get(owasp_cat, [])
 
     def generate_json(self) -> str:
-        """Gera relatório em formato JSON."""
-        print("[*] Gerando relatório JSON")
+        """Generates report in JSON format."""
+        print("[*] Generating JSON report")
 
         owasp_categories = self.categorize_owasp_iot()
         severity = self.calculate_severity()
@@ -364,7 +364,7 @@ class ReportGenerator:
         report = {
             "metadata": {
                 "generated_at": self.timestamp,
-                "tool": "Ferramenta de Detecção de Vulnerabilidades em Dispositivos IoT",
+                "tool": "IoT Device Vulnerability Detection Tool",
                 "version": "1.0",
             },
             "summary": {
@@ -394,12 +394,12 @@ class ReportGenerator:
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
 
-        print(f"[+] Relatório JSON: {filepath}")
+        print(f"[+] JSON report: {filepath}")
         return filepath
 
     def generate_html(self) -> str:
-        """Gera relatório em formato HTML."""
-        print("[*] Gerando relatório HTML")
+        """Generates report in HTML format."""
+        print("[*] Generating HTML report")
 
         owasp_categories = self.categorize_owasp_iot()
         severity = self.calculate_severity()
@@ -446,61 +446,61 @@ class ReportGenerator:
         </style>
         """
 
-        risk_class = f"risk-{severity['risk_level'].replace('í', 'i').replace('é', 'e').replace('á', 'a')}"
-        if severity["risk_level"] == "crítico":
+        risk_class = f"risk-{severity['risk_level']}"
+        if severity["risk_level"] == "critical":
             risk_class = "risk-critical"
-        elif severity["risk_level"] == "alto":
+        elif severity["risk_level"] == "high":
             risk_class = "risk-high"
-        elif severity["risk_level"] == "médio":
+        elif severity["risk_level"] == "medium":
             risk_class = "risk-medium"
         else:
             risk_class = "risk-low"
 
         html = f"""<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório de Segurança IoT</title>
+    <title>IoT Security Report</title>
     {css}
 </head>
 <body>
     <div class="container">
-        <h1>Relatório de Segurança IoT</h1>
-        <p class="timestamp">Gerado em: {self.timestamp}</p>
+        <h1>IoT Security Report</h1>
+        <p class="timestamp">Generated at: {self.timestamp}</p>
 
-        <h2>Resumo Executivo</h2>
+        <h2>Executive Summary</h2>
         <div class="summary">
             <div class="summary-card">
-                <div class="count">{severity['total_vulnerabilities']}</div>
-                <div>Vulnerabilidades</div>
+                <div class="count">{severity["total_vulnerabilities"]}</div>
+                <div>Vulnerabilities</div>
             </div>
             <div class="summary-card">
-                <div class="count {risk_class}">{severity['risk_level'].upper()}</div>
-                <div>Nível de Risco</div>
+                <div class="count {risk_class}">{severity["risk_level"].upper()}</div>
+                <div>Risk Level</div>
             </div>
             <div class="summary-card critical">
-                <div class="count">{severity['counts']['critical']}</div>
-                <div>Críticas</div>
+                <div class="count">{severity["counts"]["critical"]}</div>
+                <div>Critical</div>
             </div>
             <div class="summary-card high">
-                <div class="count">{severity['counts']['high']}</div>
-                <div>Altas</div>
+                <div class="count">{severity["counts"]["high"]}</div>
+                <div>High</div>
             </div>
             <div class="summary-card medium">
-                <div class="count">{severity['counts']['medium']}</div>
-                <div>Médias</div>
+                <div class="count">{severity["counts"]["medium"]}</div>
+                <div>Medium</div>
             </div>
             <div class="summary-card low">
-                <div class="count">{severity['counts']['low']}</div>
-                <div>Baixas</div>
+                <div class="count">{severity["counts"]["low"]}</div>
+                <div>Low</div>
             </div>
         </div>
 
-        <h2>Categorização OWASP IoT Top 10</h2>
+        <h2>OWASP IoT Top 10 Categorization</h2>
 """
 
-        # Adiciona cada categoria OWASP
+        # Add each OWASP category
         for cat_id in sorted(OWASP_IOT_TOP10.keys()):
             cat_info = OWASP_IOT_TOP10[cat_id]
             vulns = owasp_categories.get(cat_id, [])
@@ -509,10 +509,10 @@ class ReportGenerator:
             html += f"""
         <div class="category">
             <div class="category-header">
-                <h3>{cat_id}: {cat_info['name']}</h3>
+                <h3>{cat_id}: {cat_info["name"]}</h3>
                 <span class="category-count {count_class}">{len(vulns)}</span>
             </div>
-            <p>{cat_info['description']}</p>
+            <p>{cat_info["description"]}</p>
 """
 
             if vulns:
@@ -521,20 +521,18 @@ class ReportGenerator:
                     sev = vuln.get("severity", "unknown")
                     html += f"""
                 <div class="vuln-item {sev}">
-                    <strong>{vuln.get('type', 'N/A')}</strong>
+                    <strong>{vuln.get("type", "N/A")}</strong>
                     <span class="severity-badge {sev}">{sev.upper()}</span>
-                    <p>{vuln.get('description', 'Sem descrição')}</p>
+                    <p>{vuln.get("description", "No description")}</p>
                 </div>
 """
                 if len(vulns) > 10:
-                    html += (
-                        f"<p><em>... e mais {len(vulns) - 10} vulnerabilidades</em></p>"
-                    )
+                    html += f"<p><em>... and {len(vulns) - 10} more vulnerabilities</em></p>"
                 html += "</div>"
 
                 recommendations = self._get_recommendations(cat_id)
                 if recommendations:
-                    html += '<div class="recommendations"><strong>Recomendações:</strong><ul>'
+                    html += '<div class="recommendations"><strong>Recommendations:</strong><ul>'
                     for rec in recommendations:
                         html += f"<li>{rec}</li>"
                     html += "</ul></div>"
@@ -542,14 +540,14 @@ class ReportGenerator:
             html += "</div>"
 
         html += """
-        <h2>Lista Completa de Vulnerabilidades</h2>
+        <h2>Complete Vulnerability List</h2>
         <table>
             <thead>
                 <tr>
-                    <th>Tipo</th>
-                    <th>Severidade</th>
-                    <th>Fonte</th>
-                    <th>Descrição</th>
+                    <th>Type</th>
+                    <th>Severity</th>
+                    <th>Source</th>
+                    <th>Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -559,10 +557,10 @@ class ReportGenerator:
             sev = vuln.get("severity", "unknown")
             html += f"""
                 <tr>
-                    <td>{vuln.get('type', 'N/A')}</td>
+                    <td>{vuln.get("type", "N/A")}</td>
                     <td><span class="severity-badge {sev}">{sev.upper()}</span></td>
-                    <td>{vuln.get('source', 'N/A')}</td>
-                    <td>{vuln.get('description', 'N/A')[:100]}...</td>
+                    <td>{vuln.get("source", "N/A")}</td>
+                    <td>{vuln.get("description", "N/A")[:100]}...</td>
                 </tr>
 """
 
@@ -580,11 +578,11 @@ class ReportGenerator:
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(html)
 
-        print(f"[+] Relatório HTML: {filepath}")
+        print(f"[+] HTML report: {filepath}")
         return filepath
 
     def generate(self) -> Dict[str, str]:
-        """Gera relatórios em todos os formatos."""
+        """Generates reports in all formats."""
         return {
             "json": self.generate_json(),
             "html": self.generate_html(),

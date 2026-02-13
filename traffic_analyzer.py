@@ -6,8 +6,15 @@ from typing import Dict, List, Optional
 
 import pyshark
 
-from utils import (CONFIG_EXTENSIONS, CREDENTIAL_EXTENSIONS, DB_EXTENSIONS,
-                   FIRMWARE_EXTENSIONS, MIME_MAP, load_env, save_results)
+from utils import (
+    CONFIG_EXTENSIONS,
+    CREDENTIAL_EXTENSIONS,
+    DB_EXTENSIONS,
+    FIRMWARE_EXTENSIONS,
+    MIME_MAP,
+    load_env,
+    save_results,
+)
 
 
 class TrafficAnalyzer:
@@ -22,24 +29,24 @@ class TrafficAnalyzer:
             self._load_pcap()
 
     def _load_pcap(self):
-        """Carrega PCAP para análise."""
+        """Loads PCAP for analysis."""
         if self.pcap_file is None:
-            print("[!] Nenhum pcap_file definido")
+            print("[!] No pcap_file defined")
             return
 
         if not os.path.exists(self.pcap_file):
-            print(f"[!] Arquivo não encontrado: {self.pcap_file}")
+            print(f"[!] File not found: {self.pcap_file}")
             return
 
         try:
             self.cap = pyshark.FileCapture(self.pcap_file, keep_packets=True)
-            print(f"[+] PCAP carregado: {self.pcap_file}")
+            print(f"[+] PCAP loaded: {self.pcap_file}")
         except Exception as e:
-            print(f"[!] Erro ao carregar PCAP: {e}")
+            print(f"[!] Error loading PCAP: {e}")
             self.cap = None
 
     def _resolve_hostname(self, ip: str) -> str:
-        """Resolve IP para hostname com cache."""
+        """Resolves IP to hostname with cache."""
         if ip in self._dns_cache:
             return self._dns_cache[ip]
         try:
@@ -51,7 +58,7 @@ class TrafficAnalyzer:
             return ip
 
     def _classify_file(self, filename: str) -> Optional[str]:
-        """Classifica arquivo por extensão."""
+        """Classifies file by extension."""
         ext = os.path.splitext(filename.lower())[1]
         if ext in FIRMWARE_EXTENSIONS:
             return "firmware"
@@ -64,24 +71,30 @@ class TrafficAnalyzer:
         return None
 
     def capture_live(
-        self, interface: str = None, output_file: str = None, ip_filter: str = None, output_dir: str = None
+        self,
+        interface: str = None,
+        output_file: str = None,
+        ip_filter: str = None,
+        output_dir: str = None,
     ):
-        """Captura pacotes em tempo real."""
+        """Captures packets in real time."""
         if self.cap:
-            print("[*] PCAP já carregado, ignorando captura em tempo real")
+            print("[*] PCAP already loaded, skipping live capture")
             return
 
         interface = interface or self.env["DEFAULT_INTERFACE"]
         timeout = self.env["CAPTURE_TIMEOUT"]
         base_output = output_dir or os.path.join(self.env["OUTPUT_DIR"], ip_filter)
         os.makedirs(base_output, exist_ok=True)
-        output_file = os.path.join(base_output, output_file or f"capture_{ip_filter}.pcap")
+        output_file = os.path.join(
+            base_output, output_file or f"capture_{ip_filter}.pcap"
+        )
 
         bpf_filter = f"host {ip_filter}" if ip_filter else None
 
-        print(f"[*] Capturando em {interface} por {timeout}s")
+        print(f"[*] Capturing on {interface} for {timeout}s")
         if bpf_filter:
-            print(f"[+] Filtro: {bpf_filter}")
+            print(f"[+] Filter: {bpf_filter}")
 
         live_cap = pyshark.LiveCapture(
             interface=interface, output_file=output_file, bpf_filter=bpf_filter
@@ -90,16 +103,16 @@ class TrafficAnalyzer:
         try:
             live_cap.sniff(timeout=timeout)
         except KeyboardInterrupt:
-            print("[!] Captura interrompida")
+            print("[!] Capture interrupted")
 
-        print(f"[+] Salvo em: {output_file}")
+        print(f"[+] Saved to: {output_file}")
         self.pcap_file = output_file
         self._load_pcap()
 
     def list_endpoints(self) -> List[Dict]:
-        """Lista endpoints com contagem de pacotes."""
+        """Lists endpoints with packet count."""
         if self.cap is None:
-            print("[-] Nenhum PCAP carregado")
+            print("[-] No PCAP loaded")
             return []
 
         endpoints = Counter()
@@ -114,13 +127,13 @@ class TrafficAnalyzer:
                 {"ip": ip, "hostname": self._resolve_hostname(ip), "packets": count}
             )
 
-        print(f"[+] {len(results)} endpoints encontrados")
+        print(f"[+] {len(results)} endpoints found")
         return results
 
     def list_destinations_ports(self) -> List[Dict]:
-        """Lista destinos e portas com contagem."""
+        """Lists destinations and ports with count."""
         if self.cap is None:
-            print("[-] Nenhum PCAP carregado")
+            print("[-] No PCAP loaded")
             return []
 
         dests = Counter()
@@ -150,13 +163,13 @@ class TrafficAnalyzer:
                 }
             )
 
-        print(f"[+] {len(results)} destinos encontrados")
+        print(f"[+] {len(results)} destinations found")
         return results
 
     def protocol_hierarchy(self) -> List[Dict]:
-        """Retorna hierarquia de protocolos."""
+        """Returns protocol hierarchy."""
         if self.cap is None:
-            print("[-] Nenhum PCAP carregado")
+            print("[-] No PCAP loaded")
             return []
 
         hierarchy = Counter()
@@ -168,16 +181,16 @@ class TrafficAnalyzer:
             {"protocol": proto, "count": count}
             for proto, count in hierarchy.most_common()
         ]
-        print(f"[+] {len(results)} protocolos identificados")
+        print(f"[+] {len(results)} protocols identified")
         return results
 
     def export_http_objects(self, output_folder: str) -> List[Dict]:
-        """Exporta objetos HTTP e detecta arquivos sensíveis."""
+        """Exports HTTP objects and detects sensitive files."""
         if self.pcap_file is None:
-            print("[-] Nenhum PCAP definido")
+            print("[-] No PCAP defined")
             return []
 
-        print(f"[*] Exportando objetos HTTP para {output_folder}")
+        print(f"[*] Exporting HTTP objects to {output_folder}")
         os.makedirs(output_folder, exist_ok=True)
 
         http_cap = pyshark.FileCapture(self.pcap_file, display_filter="http")
@@ -224,7 +237,7 @@ class TrafficAnalyzer:
                     self.security_findings.append(
                         {
                             "type": "insecure_transfer",
-                            "description": f"Arquivo {file_type} transferido via HTTP (não criptografado)",
+                            "description": f"{file_type} file transferred via HTTP (unencrypted)",
                             "file": filename,
                             "owasp_iot": "I7",
                         }
@@ -233,16 +246,16 @@ class TrafficAnalyzer:
                 pass
 
         http_cap.close()
-        print(f"[+] {len(exported)} objetos exportados")
+        print(f"[+] {len(exported)} objects exported")
         return exported
 
     def extract_http_fields(self) -> List[Dict]:
-        """Extrai campos HTTP e detecta credenciais em texto claro."""
+        """Extracts HTTP fields and detects cleartext credentials."""
         if self.pcap_file is None:
-            print("[-] Nenhum PCAP definido")
+            print("[-] No PCAP defined")
             return []
 
-        print("[*] Extraindo campos HTTP")
+        print("[*] Extracting HTTP fields")
         http_cap = pyshark.FileCapture(self.pcap_file, display_filter="http")
         results = []
 
@@ -268,7 +281,7 @@ class TrafficAnalyzer:
                 self.security_findings.append(
                     {
                         "type": "cleartext_credentials",
-                        "description": "Credenciais HTTP Authorization em texto claro",
+                        "description": "HTTP Authorization credentials in cleartext",
                         "uri": entry["uri"],
                         "host": entry["host"],
                         "owasp_iot": "I7",
@@ -276,16 +289,16 @@ class TrafficAnalyzer:
                 )
 
         http_cap.close()
-        print(f"[+] {len(results)} requisições HTTP extraídas")
+        print(f"[+] {len(results)} HTTP requests extracted")
         return results
 
     def get_security_findings(self) -> List[Dict]:
-        """Retorna descobertas de segurança para vulnerability_detection."""
+        """Returns security findings for vulnerability_detection."""
         return self.security_findings
 
     def analyze(self, target: str = None, output_folder: str = None) -> Dict:
-        """Executa todas as análises de tráfego."""
-        print("[*] Iniciando análise de tráfego")
+        """Runs all traffic analyses."""
+        print("[*] Starting traffic analysis")
 
         if not output_folder:
             output_folder = os.path.join(self.env["OUTPUT_DIR"], target)
@@ -295,7 +308,7 @@ class TrafficAnalyzer:
             self.capture_live(ip_filter=target, output_dir=output_folder)
 
         if self.cap is None:
-            print("[-] Falha ao obter tráfego para análise")
+            print("[-] Failed to obtain traffic for analysis")
             return {}
 
         http_objects_folder = os.path.join(output_folder, "http_objects")
@@ -311,7 +324,7 @@ class TrafficAnalyzer:
 
         save_results(output_folder, "traffic", "analysis", results)
         print(
-            f"[+] Análise concluída: {len(results['security_findings'])} vulnerabilidades encontradas"
+            f"[+] Analysis complete: {len(results['security_findings'])} vulnerabilities found"
         )
         return results
 
