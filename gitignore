@@ -1,14 +1,18 @@
 # Environment
+
 .env
 !.env.example
 
 # Python
-__pycache__/
+
+**pycache**/
 
 # Output
-output/
-*.pcap
-*.json
 
-# Firmware extraído
-_*.extracted/
+output/
+_.pcap
+_.json
+
+# Extracted firmware
+
+\_\*.extracted/
